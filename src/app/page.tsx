@@ -114,6 +114,30 @@ export default function ExerciseRepTracker() {
         })
       );
     }
+    const input = document.getElementById('newChallenger') as HTMLInputElement;
+    input.value = '';
+    input.focus();
+  };
+
+  const removeChallenger = (name: string) => {
+    setChallenge((prev) => ({
+      ...prev,
+      challengers: prev.challengers.filter((c) => c.name !== name),
+    }));
+
+    // update local storage
+    const storedChallenge = localStorage.getItem(challenge.date);
+    if (storedChallenge) {
+      localStorage.setItem(
+        challenge.date,
+        JSON.stringify({
+          ...JSON.parse(storedChallenge),
+          challengers: JSON.parse(storedChallenge).challengers.filter(
+            (c: Challenger) => c.name !== name
+          ),
+        })
+      );
+    }
   };
 
   const updateReps = (name: string, change: number) => {
@@ -152,8 +176,13 @@ export default function ExerciseRepTracker() {
     }
   };
 
+  const currentChallengeTotalReps = challenge.challengers.reduce(
+    (sum, c) => sum + c.reps,
+    0
+  );
+
   return (
-    <div className='w-full max-w-2xl mx-auto space-y-6'>
+    <div className='w-full max-w-2xl mx-auto space-y-6 group/parent'>
       <Card>
         <CardHeader>
           <CardTitle>Exercise Rep Tracker</CardTitle>
@@ -169,11 +198,22 @@ export default function ExerciseRepTracker() {
               </label>
               <Input
                 type='text'
+                list='excercises'
                 id='excercise'
                 value={challenge.excercise}
                 onChange={(e) => updateChallengeExcercise(e.target.value)}
                 className='mt-1'
               />
+              <datalist id='excercises'>
+                <option value='Pushups' />
+                <option value='Situps' />
+                <option value='Squats' />
+                <option value='Pullups' />
+                <option value='Planks' />
+                <option value='Lunges' />
+                <option value='Burpees' />
+                <option value='Jumping Jacks' />
+              </datalist>
             </div>
             <div>
               <label
@@ -202,9 +242,11 @@ export default function ExerciseRepTracker() {
                   type='text'
                   id='newChallenger'
                   placeholder='Challenger name'
-                  onKeyUp={(e) =>
-                    e.key === 'Enter' && addChallenger(e.currentTarget.value)
-                  }
+                  onKeyUp={(e) => {
+                    if (!e.currentTarget.value) return;
+
+                    e.key === 'Enter' && addChallenger(e.currentTarget.value);
+                  }}
                 />
                 <Button
                   onClick={() => {
@@ -224,12 +266,21 @@ export default function ExerciseRepTracker() {
               {challenge.challengers.map((challenger) => (
                 <div
                   key={challenger.name}
-                  className='flex items-center justify-between'
+                  className='flex items-center justify-between '
                 >
-                  <span>
-                    {challenger.name}{' '}
-                    {challenger.reps < challenge.goal ? '🐈' : '🐕'}
-                  </span>
+                  <div className='group'>
+                    <span className='group-hover:pl-8 transition-all relative'>
+                      <div
+                        title={`Remove ${challenger.name}`}
+                        onClick={() => removeChallenger(challenger.name)}
+                        className='bg-destructive/10 border border-destructive/20 rounded-md cursor-pointer hover-visible hover:opacity-100 hover:scale-100 hover:translate-x-0 group-hover:visible group-hover:opacity-100 group-hover:scale-100 group-hover:translate-x-0 transition-all transform translate-x-4 scale-0 opacity-0 absolute left-0'
+                      >
+                        <Minus className='h-4 w-4' />
+                      </div>
+                      {challenger.name}{' '}
+                      {challenger.reps < challenge.goal ? '🐈' : '🐕'}
+                    </span>
+                  </div>
                   {/* calculate how percentage of goal completed by the user */}
                   <span>
                     {Math.round((challenger.reps / challenge.goal) * 100)}% or{' '}
@@ -299,8 +350,7 @@ export default function ExerciseRepTracker() {
             </div>
             <div className='text-right'>
               <span className='font-bold'>
-                Total:{' '}
-                {challenge.challengers.reduce((sum, c) => sum + c.reps, 0)}
+                Total: {currentChallengeTotalReps}
               </span>
             </div>
           </div>
@@ -327,8 +377,8 @@ export default function ExerciseRepTracker() {
                       >
                         <span>{challenger.name}</span>
                         <span>
-                          {challenger.reps} reps{' '}
-                          {challenger.reps >= challenge.goal
+                          {challenger.reps} reps out of {pastChallenge.goal}{' '}
+                          {challenger.reps >= pastChallenge.goal
                             ? '✅'
                             : 'Wimped Out 🐈'}
                         </span>
@@ -349,6 +399,17 @@ export default function ExerciseRepTracker() {
           </Accordion>
         </CardContent>
       </Card>
+      {currentChallengeTotalReps >=
+        challenge.goal * challenge.challengers.length && (
+        <div className='absolute left-0 right-0 top-10 bottom-0 overflow-hidden group-hover/parent:hidden'>
+          <div className='firework'></div>
+          <div className='firework'></div>
+          <div className='firework'></div>
+          <div className='firework'></div>
+          <div className='firework'></div>
+          <div className='firework'></div>
+        </div>
+      )}
     </div>
   );
 }
