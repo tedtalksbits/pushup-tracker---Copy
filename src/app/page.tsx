@@ -182,7 +182,7 @@ export default function ExerciseRepTracker() {
   );
 
   return (
-    <div className='w-full max-w-2xl mx-auto space-y-6 group/parent'>
+    <div className='w-full max-w-2xl mx-auto space-y-6'>
       <Card>
         <CardHeader>
           <CardTitle>Exercise Rep Tracker</CardTitle>
@@ -399,9 +399,9 @@ export default function ExerciseRepTracker() {
           </Accordion>
         </CardContent>
       </Card>
-      {currentChallengeTotalReps >=
+      {/* {currentChallengeTotalReps >=
         challenge.goal * challenge.challengers.length && (
-        <div className='absolute left-0 right-0 top-10 bottom-0 overflow-hidden group-hover/parent:hidden'>
+        <div className='absolute left-0 right-0 top-10 bottom-0 overflow-hidden'>
           <div className='firework'></div>
           <div className='firework'></div>
           <div className='firework'></div>
@@ -409,7 +409,7 @@ export default function ExerciseRepTracker() {
           <div className='firework'></div>
           <div className='firework'></div>
         </div>
-      )}
+      )} */}
     </div>
   );
 }
