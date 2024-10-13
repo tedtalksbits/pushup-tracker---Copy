@@ -11,6 +11,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface Challenger {
   name: string;
@@ -180,6 +188,54 @@ export default function ExerciseRepTracker() {
     (sum, c) => sum + c.reps,
     0
   );
+
+  const wimpiestChallengerOfAllTime = allChallenges.reduce(
+    (wimp, c) =>
+      c.challengers.reduce((wimp, ch) => (ch.reps < c.goal ? ch : wimp), wimp),
+    { name: 'No one', reps: Infinity }
+  );
+
+  const totalAmountRepsForAllChallenges = allChallenges.reduce(
+    (sum, c) => sum + c.goal * c.challengers.length,
+    0 // initial value
+  );
+
+  const challengersOverallData = allChallenges.reduce((acc, challenge) => {
+    /*
+      ========================================
+      | 1. Overall data for a challenger     |
+      ========================================
+      [{name: 'John', reps: 100, completed: 1, skippedChallenges: challenge[]}, {name: 'Jane', reps: 50, completed: 0, skippedChallenges: challenge[]}]
+    */
+    if (
+      !challenge.challengers.length ||
+      challenge.goal === 0 ||
+      challenge.challengers.length === 0
+    ) {
+      return acc;
+    }
+    challenge.challengers.forEach((challenger) => {
+      if (!acc[challenger.name]) {
+        acc[challenger.name] = {
+          reps: 0,
+          completed: 0,
+          skippedChallenges: [],
+          requiredReps: 0,
+        };
+      }
+      acc[challenger.name].reps += challenger.reps;
+      if (challenger.reps >= challenge.goal) {
+        acc[challenger.name].completed += 1;
+      }
+      if (challenger.reps === 0) {
+        acc[challenger.name].skippedChallenges.push(challenge);
+      }
+
+      acc[challenger.name].requiredReps += challenge.goal;
+    });
+
+    return acc;
+  }, {} as Record<string, { reps: number; completed: number; skippedChallenges: Challenge[]; requiredReps: number }>);
 
   return (
     <div className='w-full max-w-2xl mx-auto space-y-6'>
@@ -399,6 +455,7 @@ export default function ExerciseRepTracker() {
           </Accordion>
         </CardContent>
       </Card>
+
       {/* {currentChallengeTotalReps >=
         challenge.goal * challenge.challengers.length && (
         <div className='absolute left-0 right-0 top-10 bottom-0 overflow-hidden'>
@@ -410,6 +467,63 @@ export default function ExerciseRepTracker() {
           <div className='firework'></div>
         </div>
       )} */}
+      {/* wimp section */}
+      {/* <Card>
+        <CardHeader>
+          <CardTitle>Wimp of All Time</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <span>
+              {wimpiestChallengerOfAllTime.name} with{' '}
+              {wimpiestChallengerOfAllTime.reps} reps
+            </span>
+          </div>
+        </CardContent>
+      </Card> */}
+
+      {/* {JSON.stringify(challengersOverallData)} */}
+
+      {/* challengers data table */}
+      {Object.entries(challengersOverallData).length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Challengers Data</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table className='w-full'>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className='text-left'>Challenger</TableHead>
+                  <TableHead className='text-left'>Total Reps</TableHead>
+                  <TableHead className='text-left'>Required Reps</TableHead>
+                  <TableHead className='text-left'>Missing Reps</TableHead>
+                  <TableHead className='text-left'>
+                    Completed Challenges
+                  </TableHead>
+                  <TableHead className='text-left'>Days Skipped</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.entries(challengersOverallData).map(
+                  ([challenger, data]) => (
+                    <TableRow key={challenger}>
+                      <TableCell>{challenger}</TableCell>
+                      <TableCell>{data.reps}</TableCell>
+                      <TableCell>{data.requiredReps}</TableCell>
+                      <TableCell>
+                        {Math.max(0, data.requiredReps - data.reps)}
+                      </TableCell>
+                      <TableCell>{data.completed}</TableCell>
+                      <TableCell>{data.skippedChallenges.length}</TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
