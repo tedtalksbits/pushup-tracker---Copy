@@ -33,6 +33,8 @@ interface Challenge {
   startedAt?: string;
 }
 
+import '@/app/public/alpha-dog.png';
+
 export default function ExerciseRepTracker() {
   const [challenge, setChallenge] = useState<Challenge>(
     JSON.parse(
@@ -201,12 +203,6 @@ export default function ExerciseRepTracker() {
   );
 
   const challengersOverallData = allChallenges.reduce((acc, challenge) => {
-    /*
-      ========================================
-      | 1. Overall data for a challenger     |
-      ========================================
-      [{name: 'John', reps: 100, completed: 1, skippedChallenges: challenge[]}, {name: 'Jane', reps: 50, completed: 0, skippedChallenges: challenge[]}]
-    */
     if (
       !challenge.challengers.length ||
       challenge.goal === 0 ||
@@ -334,7 +330,7 @@ export default function ExerciseRepTracker() {
                         <Minus className='h-4 w-4' />
                       </div>
                       {challenger.name}{' '}
-                      {challenger.reps < challenge.goal ? '🐈' : '🐕'}
+                      {challenger.reps < challenge.goal ? '🐈' : '🐩'}
                     </span>
                   </div>
                   {/* calculate how percentage of goal completed by the user */}
